@@ -117,3 +117,75 @@ WHERE (ename, job, sal) IN (
         V);
 
 -- Reterving deptno which donot have any employees
+SELECT
+    deptno
+FROM
+    departments
+EXCEPT
+SELECT
+    deptno
+FROM
+    employees;
+
+-- Truth TABLES
+--  OR | T | F | N |
+-- +----+---+---+----+
+-- | T | T | T | T |
+-- | F | T | F | N |
+-- | N | T | N | N |
+-- +----+---+---+----+
+-- NOT |
+-- +-----+---+
+-- | T | F |
+-- | F | T |
+-- | N | N |
+-- +-----+---+
+--  AND | T | F | N |
+-- +-----+---+---+---+
+-- | T | T | F | N |
+-- | F | F | F | F |
+-- | N | N | F | N |
+-- +-----+---+---+---+
+-- When using in or not in always be cautions with NULL
+-- Below query will return no results.
+SELECT
+    deptno
+FROM
+    departments
+WHERE
+    deptno NOT IN (10, 50, NULL);
+
+-- Lets for undestand it for Dept no 20
+-- DEPTNO=20
+-- NOT (deptno=10 or deptno=50 or deptno=null)
+-- = NOT (20=10 or 20=50 or 20=null)
+-- = NOT (F or F or N)
+-- = NOT (F or N)
+-- = NOT (N)
+-- = (N)
+-- Not exists check if a row return by subquery or not
+SELECT
+    deptno
+FROM
+    departments d
+WHERE
+    NOT EXISTS (
+        SELECT
+            1
+        FROM
+            employees e
+        WHERE
+            d.deptno = e.deptno);
+
+-- Finding which departments has no employees
+-- Left outer join makes cartesion mapping with all matching deptno and ALSO
+-- make a entry for dept which has no mapping with employees will all employees values NULL
+-- It is also call anti JOIN
+SELECT
+    d.*
+FROM
+    departments d
+    LEFT OUTER JOIN employees e ON (d.deptno = e.deptno)
+WHERE
+    e.deptno IS NULL;
+
