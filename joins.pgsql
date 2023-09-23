@@ -189,3 +189,130 @@ FROM
 WHERE
     e.deptno IS NULL;
 
+SELECT
+    e.ename,
+    d.loc,
+    eb.received
+FROM
+    employees e
+    JOIN departments d ON (e.deptno = d.deptno)
+    LEFT JOIN emp_bonus eb ON e.empno = eb.empno
+ORDER BY
+    3;
+
+-- Alternative Way
+SELECT
+    e.ename,
+    d.loc,
+(
+        SELECT
+            eb.received
+        FROM
+            emp_bonus eb
+        WHERE
+            eb.empno = e.empno) AS received
+FROM
+    employees e,
+    departments d
+WHERE
+    e.deptno = d.deptno
+ORDER BY
+    3;
+
+-- Determining if two tables have same data or not
+
+CREATE VIEW V AS
+
+SELECT
+    *
+FROM
+    employees
+WHERE
+    deptno <> 10
+UNION ALL
+SELECT
+    *
+FROM
+    employees
+WHERE
+    ename = 'WARD';
+
+(
+    SELECT
+        empno,
+        ename,
+        job,
+        sal,
+        comm,
+        count(*) AS cnt
+    FROM
+        v
+    GROUP BY
+        empno,
+        ename,
+        job,
+        sal,
+        comm
+    EXCEPT
+    SELECT
+        empno,
+        ename,
+        job,
+        sal,
+        comm,
+        count(*) AS cnt
+    FROM
+        employees
+    GROUP BY
+        empno,
+        ename,
+        job,
+        sal,
+        comm)
+UNION ALL (
+    SELECT
+        empno,
+        ename,
+        job,
+        sal,
+        comm,
+        count(*) AS cnt
+    FROM
+        employees
+    GROUP BY
+        empno,
+        ename,
+        job,
+        sal,
+        comm
+    EXCEPT
+    SELECT
+        empno,
+        ename,
+        job,
+        sal,
+        comm,
+        count(*) AS cnt
+    FROM
+        v
+    GROUP BY
+        empno,
+        ename,
+        job,
+        sal,
+        comm);
+
+-- A INTERSECTION B UNION B INTERSECTION A = NULL then same
+
+-- Alternative but less reliable way (Check cardinality)
+-- if union returns a single row then both table have same data count
+
+SELECT
+    count(*) AS cnt
+FROM
+    employees
+UNION
+SELECT
+    count(*) AS cnt
+FROM
+    v;

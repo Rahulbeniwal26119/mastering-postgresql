@@ -18,6 +18,12 @@ CREATE TABLE employees (
     DEPTNO INT REFERENCES departments(DEPTNO)
 );
 
+CREATE TABLE emp_bonus (
+    EMPNO BIGINT REFERENCES employees(EMPNO),
+    RECEIVED date NOT NULL,
+    TYPE BIGINT REFERENCES departments(DEPTNO),
+    CONSTRAINT emp_bonus_pk PRIMARY KEY (EMPNO)
+);
 -- ****** Insert into departements ******
 
 
@@ -66,3 +72,4 @@ VALUES
   (7934, 'MILLER', 'CLERK', 7782, TO_DATE('23-JAN-2007', 'DD-MON-YYYY'), 1300, NULL, 10),
   (7788, 'SCOTT', 'ANALYST', 7566, TO_DATE('09-DEC-2007', 'DD-MON-YYYY'), 3000, NULL, 20);
 
+INSERT INTO emp_bonus (empno, received, type) VALUES (7369, '2005-03-14', 10), (7900, '2005-03-14', 20), (7788, '2005-02-14', 30);
