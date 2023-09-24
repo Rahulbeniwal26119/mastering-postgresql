@@ -316,3 +316,20 @@ SELECT
     count(*) AS cnt
 FROM
     v;
+
+select * from (
+    select e.empno, e.ename, e.job, count(*) from employees e
+    group by empno, ename, deptno, job
+) as e
+where not exists (
+    select null from (
+        select v.empno, v.ename, v.job, count(*) from v
+        GROUP by empno, ename, deptno, job
+    ) as v
+    where e.empno = v.empno
+    and e.ename = v.ename
+    and e.job = v.job
+    and e.count = v.count
+);
+
+select * from employees e, departments d where e.deptno = 10 and d.deptno = e.deptno;
