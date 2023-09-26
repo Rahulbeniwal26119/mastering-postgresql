@@ -220,9 +220,7 @@ ORDER BY
     3;
 
 -- Determining if two tables have same data or not
-
 CREATE VIEW V AS
-
 SELECT
     *
 FROM
@@ -303,10 +301,8 @@ UNION ALL (
         comm);
 
 -- A INTERSECTION B UNION B INTERSECTION A = NULL then same
-
 -- Alternative but less reliable way (Check cardinality)
 -- if union returns a single row then both table have same data count
-
 SELECT
     count(*) AS cnt
 FROM
@@ -317,19 +313,101 @@ SELECT
 FROM
     v;
 
-select * from (
-    select e.empno, e.ename, e.job, count(*) from employees e
-    group by empno, ename, deptno, job
-) as e
-where not exists (
-    select null from (
-        select v.empno, v.ename, v.job, count(*) from v
-        GROUP by empno, ename, deptno, job
-    ) as v
-    where e.empno = v.empno
-    and e.ename = v.ename
-    and e.job = v.job
-    and e.count = v.count
-);
+SELECT
+    *
+FROM (
+    SELECT
+        e.empno,
+        e.ename,
+        e.job,
+        count(*)
+    FROM
+        employees e
+    GROUP BY
+        empno,
+        ename,
+        deptno,
+        job) AS e
+WHERE
+    NOT EXISTS (
+        SELECT
+            NULL
+        FROM (
+            SELECT
+                v.empno,
+                v.ename,
+                v.job,
+                count(*)
+            FROM
+                v
+            GROUP BY
+                empno,
+                ename,
+                deptno,
+                job) AS v
+        WHERE
+            e.empno = v.empno
+            AND e.ename = v.ename
+            AND e.job = v.job
+            AND e.count = v.count);
 
-select * from employees e, departments d where e.deptno = 10 and d.deptno = e.deptno;
+SELECT
+    *
+FROM
+    employees e,
+    departments d
+WHERE
+    e.deptno = 10
+    AND d.deptno = e.deptno;
+
+-- performing joins with aggregates
+SELECT
+    *
+FROM
+    emp_bonus;
+
+SELECT
+    deptno,
+    sum(DISTINCT sal) AS total_sal,
+    sum(bonus) AS total_bonus
+FROM (
+    SELECT
+        e.empno,
+        e.ename,
+        e.sal,
+        e.deptno,
+        e.sal * CASE WHEN b.type = 1 THEN .1
+        WHEN b.type = 2 THEN .2
+        ELSE .3
+        END AS bonus
+    FROM
+        employees e,
+        emp_bonus b
+    WHERE
+        e.empno = b.empno) AS x
+GROUP BY
+    deptno;
+
+-- alternative version for oracle and sql server
+select e.empno, e.ename, 
+       sum(distinct e.sal) over (partition by e.deptno) as total_sal,
+       e.deptno,
+       sum(e.sal * case when b.type = 1 then .1
+                        when b.type = 2 then .2
+                        else .3 end) over (partition by e.deptno) as total_bonus
+        from employees e, emp_bonus b 
+        where e.deptno = 10
+        ;
+
+-- Performing Outer Joins When Using Aggregates
+select deptno, sum(distinct sal) as total_sal, sum(bonus) as total_bonus
+from (
+    select e.empno, e.ename, e.sal, e.deptno,
+    e.sal * case when b.type = 1 then .1
+                 when b.type = 2 then .2
+                 else .3 end as bonus
+    from employees e LEFT OUTER join emp_bonus b
+    on (e.empno = b.empno)
+    ) as x
+    group by deptno;
+
