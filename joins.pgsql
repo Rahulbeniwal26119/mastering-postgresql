@@ -411,3 +411,19 @@ from (
     ) as x
     group by deptno;
 
+-- Using Coalesce for comparing null values
+select
+	ename,
+	comm
+from
+	employees e
+where
+	coalesce(comm ,
+	0) < (
+	select
+		comm
+	from
+		employees e2
+	where
+		ename = 'WARD'
+);

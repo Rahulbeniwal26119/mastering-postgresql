@@ -1,3 +1,4 @@
+-- Active: 1701667080935@@127.0.0.1@5432@postgresql_learning
 -- ****** Create initial tables ******
 
 
