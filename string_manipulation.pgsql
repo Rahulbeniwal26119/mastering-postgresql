@@ -262,7 +262,7 @@ group by
 -- JONES	EJNOS
 -- KING	GIKN
 
--- Identifying String that can be treated as String
+-- Identifying String that can be treated as Number
 
 create view V as (
 	select replace(mixed, ',', '') as data
@@ -294,3 +294,54 @@ create view V as (
 -- 7566
 -- TURNER
 -- MARTIN
+
+select cast(
+	case 
+		when replace(translate(data, '0123456789', '9999999999'), '9', '') is not null 
+		then replace(translate(
+						data, 
+						replace(translate(data, '0123456789', '9999999999'), '9', ''),
+						rpad('#', length(data), '#')), '#', '')
+	end as integer) as mixed
+from V
+where strpos(translate(data, '0123456789','9999999999'), '9') > 0;
+
+-- Extracting nth delimited SubString
+
+create view V as
+select 'mo,larry,curly' as name
+union all
+select 'tina,gina,jaunita,regina,leena' as name;
+
+
+select name from (
+	select iter.pos, split_part(src.name, ',', iter.pos::int) as name
+	from (select id as pos from index_table it) iter,
+		 (select cast(name as text) as name from V) src
+	where iter.pos < length(src.name) - length(replace(src.name, ',', '')) + 1
+) x
+where pos = 2;
+
+-- Parsing an IP Address
+
+select 
+	split_part(y.ip, '.', 1) as A,
+	split_part(y.ip, '.', 2) as B,
+	split_part(y.ip, '.', 3) as C,
+	split_part(y.ip, '.', 4) as D 
+from (select cast('192.168.43.12' as text) as ip) as y;
+
+-- Comparing String by Sound
+select * from pg_extension;
+create extension fuzzystrmatch;
+
+select
+	e.ename,
+	e2.ename
+from
+	employees e
+join employees e2 on
+	e.empno = e2.empno
+where
+	soundex(e.ename) = soundex(e2.ename)
+	and e.ename not like e2.ename;
