@@ -345,3 +345,23 @@ join employees e2 on
 where
 	soundex(e.ename) = soundex(e2.ename)
 	and e.ename not like e2.ename;
+
+-- Finding Text not matching a Pattern
+
+create table employee_comment (emp_id int, text varchar(300));
+
+insert into employee_comment (emp_id, text) values (7782, '126 Varnum, Edmore MI 48829, 989 313-5351'), (7839, '1105 McConnell Court
+Cedar Lake MI 48812
+Home: 989-387-4321
+Cell: (237) 438-3333');
+
+select emp_id, text from employee_comment
+where regexp_replace(
+		text,
+		'[0-9]{3}([-. ])[0-9]{3}\1[0-9]{4}',
+		'***'
+		) ~
+		'[0-9]{3}[-. ][0-9]{3}[-. ][0-9]{4}' ;
+
+-- Starategy is to first replace valid numbers by *** and then compare for string containing valid number but 
+-- as we have removed valid ones by then remaining one are invalid but like 3 3 4 where they can be seprated by choice of seprators
